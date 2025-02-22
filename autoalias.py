@@ -1,7 +1,8 @@
 import re
+import requests
 
 def process_line(line, line_num):
-    # Check if the line contains the "play" command followed by a file path
+    # Check if the line contains the "play" command followed by any non-whitespace path
     if not re.match(r'^play\s+\S+', line):
         print(f"Line {line_num} is invalid: {line.strip()}")
         return None
@@ -24,17 +25,21 @@ def process_line(line, line_num):
     alias_command = f'alias {alias_name} "{command} {path}"'
     return alias_command
 
-def process_file(input_file, output_file):
-    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
-        for line_num, line in enumerate(infile, start=1):
+def main():
+    url = "https://raw.githubusercontent.com/armync/ArminC-CS2-Cvars/refs/heads/main/sounds/sounds_cvar.txt"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Failed to fetch the file from the URL.")
+        return
+
+    lines = response.text.splitlines()
+
+    with open('output.txt', 'w', encoding='utf-8') as outfile:
+        for line_num, line in enumerate(lines, start=1):
             result = process_line(line, line_num)
             if result:
                 outfile.write(result + '\n')
-
-def main():
-    input_file = 'input.txt'  # Change this to your input file name
-    output_file = 'output.txt'  # Change this to your output file name
-    process_file(input_file, output_file)
+    print("Output written to 'output.txt'")
 
 if __name__ == "__main__":
     main()
